@@ -1,0 +1,137 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg
+*.egg-info/
+.eggs/
+.installed.cfg
+.python-version
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===== Caches =====
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.cache/
+
+# ===== Virtual envs =====
+.venv/
+.venv-*/
+venv/
+venv-*/
+env/
+ENV/
+
+# ===== Build artifacts =====
+dist/
+build/
+*.whl
+*.tar.gz
+sdist/
+wheels/
+
+# ===== Test / coverage =====
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.hypothesis/
+
+# ===== Watchdog runtime artifacts =====
+# (NEVER commit these — they encode local PIDs, log content, runtime state)
+*.pid
+*.log
+*.log.[0-9]*
+watchdog.log*
+logs/
+
+# ===== Editors / IDEs =====
+.idea/
+.vscode/
+.vscode-test/
+.history/
+*.swp
+*.swo
+*~
+.spyderproject
+.spyproject
+
+# ===== Claude Code / AI assistant metadata =====
+.claude/
+.cursor/
+.aider*
+.continue/
+.codeium/
+
+# ===== OS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+
+# ===== Node (defensive) =====
+node_modules/
+npm-debug.log*
+
+# ===== SECRETS — never commit any of these =====
+.env
+.env.*
+*.env
+.envrc
+secrets/
+secret/
+credentials.json
+credentials.yaml
+credentials.yml
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.csr
+*.der
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+service-account*.json
+gcp-key*.json
+firebase-adminsdk*.json
+aws-credentials*
+.aws/
+.gcp/
+.azure/
+config.local.*
+*.local
+*-secret.*
+*-secrets.*
+*.private.*
+private/
+
+# ===== AI/ML provider tokens =====
+.anthropic
+.openai
+.huggingface/
+.cache/huggingface/
+.cohere
+.replicate
+.together
+
+# ===== Databases =====
+*.sqlite
+*.sqlite3
+*.db
+
+# ===== Template/sample exceptions =====
+!.env.example
+!.env.sample
+!.env.template

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evergreen-watchdog"
+version = "0.1.0"
+description = "Process supervisor for long-running scheduled cycles. Internet probe with fallback, RAM-pressure pause, pluggable pre-cycle gates, exponential backoff."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "aiton08255", email = "ait.on.08255@gmail.com" }]
+keywords = ["watchdog", "supervisor", "cron", "scheduled-task", "process-supervisor", "backoff"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Monitoring",
+  "Topic :: System :: Systems Administration",
+]
+dependencies = [
+  "racefree-filelock>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/aiton08255/evergreen-watchdog"
+Source = "https://github.com/aiton08255/evergreen-watchdog"
+Issues = "https://github.com/aiton08255/evergreen-watchdog/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+psutil = ["psutil>=5.9"]
+
+[project.scripts]
+evergreen-watchdog = "evergreen_watchdog.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evergreen_watchdog"]

@@ -1,0 +1,71 @@
+# systemd unit template for evergreen-watchdog.
+#
+# How to use:
+#   1. Copy to /etc/systemd/system/MY-JOB-watchdog.service (or as a user
+#      unit under ~/.config/systemd/user/).
+#   2. Replace every <PLACEHOLDER> below with the real value for your job.
+#   3. systemctl daemon-reload && systemctl enable --now MY-JOB-watchdog.service
+#
+# The unit is designed for a SUPERVISOR-of-a-cycle pattern: the
+# evergreen-watchdog process stays alive (Restart=always) and itself
+# invokes your job (the COMMAND-TO-RUN) on a loop. Do NOT use
+# Type=oneshot or Restart=on-failure unless you understand what you're
+# losing.
+
+[Unit]
+Description=evergreen-watchdog supervisor for <YOUR-JOB-NAME>
+# Wait for network if your job needs internet. Remove if not relevant.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# The supervisor manages its own lifecycle. Don't let systemd race it.
+Restart=always
+RestartSec=10
+# Standard out/err go to journald by default. To redirect to a file,
+# uncomment and set the path.
+# StandardOutput=append:/var/log/MY-JOB-watchdog.log
+# StandardError=append:/var/log/MY-JOB-watchdog.log
+
+# Run as a non-root user. Create the user beforehand or change to your
+# preferred service account. NEVER run watchdog'd jobs as root unless
+# the job genuinely requires it.
+User=<YOUR-SERVICE-USER>
+Group=<YOUR-SERVICE-GROUP>
+
+WorkingDirectory=<ABSOLUTE-PATH-TO-WORKING-DIR>
+
+# Environment: customise as needed
+Environment=PYTHONUNBUFFERED=1
+# Environment=YOUR_API_KEY=
+# Better: EnvironmentFile=/etc/MY-JOB.env (with chmod 600)
+
+# The actual command. Replace <COMMAND-TO-RUN> with your job.
+# --lock  = path to the singleton lock file (must be writable by User above)
+# --log   = supervisor log file (optional)
+# --internet, --ram-max, --flag-file = optional gates (see README)
+ExecStart=/usr/bin/env python3 -m evergreen_watchdog.cli \
+    --lock /var/run/<YOUR-JOB-NAME>.pid \
+    --log /var/log/<YOUR-JOB-NAME>-watchdog.log \
+    --internet \
+    --ram-max 85 \
+    --initial-sleep 60 \
+    --max-sleep 3600 \
+    --pause-after 3 \
+    -- <COMMAND-TO-RUN>
+
+# Resource limits — uncomment and tune for your workload.
+# MemoryMax=4G
+# CPUQuota=200%
+# Nice=10
+
+# Hardening — uncomment after verifying your job doesn't need these caps.
+# NoNewPrivileges=true
+# ProtectSystem=strict
+# ProtectHome=true
+# PrivateTmp=true
+# ReadWritePaths=/var/log/<YOUR-JOB-NAME>-watchdog.log /var/run/<YOUR-JOB-NAME>.pid
+
+[Install]
+WantedBy=multi-user.target

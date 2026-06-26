@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<!--
+  Windows Scheduled Task template for evergreen-watchdog.
+
+  How to use:
+    1. Replace every <PLACEHOLDER> below with the real value for your job.
+       At minimum:
+         <USER-SID>         your account SID (run: whoami /user)
+         <USER-PRINCIPAL>   "DOMAIN\username" or "MACHINE\username"
+         <ABSOLUTE-PATH>    full path to your project root
+         <PYTHON-EXE>       full path to python.exe
+         <LOCK-PATH>        e.g. C:\ProgramData\MY-JOB\watchdog.pid
+         <LOG-PATH>         e.g. C:\ProgramData\MY-JOB\watchdog.log
+         <COMMAND-TO-RUN>   your job's executable + args
+    2. Save as your-job-watchdog.xml.
+    3. Register:
+         schtasks /Create /TN "MY-JOB-Watchdog" /XML your-job-watchdog.xml
+       (no admin needed if it runs only as the current user)
+    4. Verify:
+         schtasks /Query /TN "MY-JOB-Watchdog" /V /FO LIST
+
+  Trigger fires on logon AND on a 5-minute repeat indefinitely. The
+  watchdog's singleton lock ensures only one instance ever runs even
+  if the trigger fires multiple times (a known logon-storm pattern).
+-->
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Author><USER-PRINCIPAL></Author>
+    <URI>\MY-JOB-Watchdog</URI>
+    <Description>evergreen-watchdog supervisor for &lt;YOUR-JOB-NAME&gt;</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <LogonTrigger>
+      <Enabled>true</Enabled>
+      <UserId><USER-PRINCIPAL></UserId>
+      <Delay>PT30S</Delay>
+    </LogonTrigger>
+    <TimeTrigger>
+      <Repetition>
+        <Interval>PT5M</Interval>
+        <StopAtDurationEnd>false</StopAtDurationEnd>
+      </Repetition>
+      <StartBoundary>2026-01-01T00:00:00</StartBoundary>
+      <Enabled>true</Enabled>
+    </TimeTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId><USER-SID></UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command><PYTHON-EXE></Command>
+      <Arguments>-m evergreen_watchdog.cli --lock "<LOCK-PATH>" --log "<LOG-PATH>" --internet --ram-max 85 --initial-sleep 60 --max-sleep 3600 --pause-after 3 -- <COMMAND-TO-RUN></Arguments>
+      <WorkingDirectory><ABSOLUTE-PATH></WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
