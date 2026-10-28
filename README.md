@@ -1,10 +1,11 @@
 # evergreen-watchdog
+[![tests](https://github.com/dnarsh/evergreen-watchdog/actions/workflows/tests.yml/badge.svg)](https://github.com/dnarsh/evergreen-watchdog/actions/workflows/tests.yml)
 
 A Python process supervisor for **long-running scheduled cycles** — jobs that need to keep running across crashes, sleep/wake, intermittent internet, and host reboots. Pluggable pre-cycle gates (internet probe with fallback, RAM-pressure pause, custom flags), exponential backoff with operator-pause-after-N-failures, singleton lock that survives the host's scheduler firing the supervisor twice on login.
 
 Extracted from a private long-running system that needed to keep a research loop alive across 100+ continuous cycles with zero operator intervention. The patterns here were proven against months of real-world failures — captive-portal Wi-Fi, RAM pressure from foreground apps, scheduler logon-storms, mid-cycle laptop sleeps.
 
-> **Status (v0.1.0):** Source-only release. Not yet published to PyPI. Install from GitHub — see [Install](#install) below. The companion dependency [`racefree-filelock`](https://github.com/aiton08255/racefree-filelock) is also source-only for now; both must be installed from GitHub.
+> **Status (v0.1.0):** Source-only release. Not yet published to PyPI. Install from GitHub — see [Install](#install) below. The companion dependency [`racefree-filelock`](https://github.com/dnarsh/racefree-filelock) is also source-only for now; both must be installed from GitHub.
 
 ---
 
@@ -12,7 +13,7 @@ Extracted from a private long-running system that needed to keep a research loop
 
 A `Watchdog` class that wraps your job (a Python callable OR a subprocess command) and:
 
-1. **Guarantees only one supervisor runs** at a time, even if the OS scheduler fires it twice. Uses [racefree-filelock](https://github.com/aiton08255/racefree-filelock) under the hood.
+1. **Guarantees only one supervisor runs** at a time, even if the OS scheduler fires it twice. Uses [racefree-filelock](https://github.com/dnarsh/racefree-filelock) under the hood.
 2. **Checks pre-cycle gates** before each invocation. If any gate blocks (no internet, RAM tight, operator paused), the cycle is skipped and retried later.
 3. **Backs off exponentially on failure**, capped at `max_sleep`. After N consecutive failures, jumps to a long pause so an operator can inspect instead of the supervisor producing more empty cycles.
 4. **Survives the supervisor process dying** — the OS scheduler restarts it, the lock detects the dead PID and takes over safely.
@@ -46,8 +47,8 @@ Plus templates for **Windows Scheduled Task** and **systemd** to wire it into yo
 Until v0.1.0 lands on PyPI, install both packages directly from GitHub:
 
 ```bash
-pip install git+https://github.com/aiton08255/racefree-filelock
-pip install git+https://github.com/aiton08255/evergreen-watchdog
+pip install git+https://github.com/dnarsh/racefree-filelock
+pip install git+https://github.com/dnarsh/evergreen-watchdog
 
 # Optional: psutil enables the RAMGate
 pip install psutil
@@ -56,8 +57,8 @@ pip install psutil
 Or clone and install editable for local hacking:
 
 ```bash
-git clone https://github.com/aiton08255/racefree-filelock
-git clone https://github.com/aiton08255/evergreen-watchdog
+git clone https://github.com/dnarsh/racefree-filelock
+git clone https://github.com/dnarsh/evergreen-watchdog
 pip install -e ./racefree-filelock
 pip install -e "./evergreen-watchdog[dev,psutil]"
 ```
@@ -177,7 +178,7 @@ A clean cycle resets the failure counter.
 
 5. **`InternetGate` proves only that *some* host is reachable.** Captive portals can intercept TCP/53 in some configurations. If your job has a specific endpoint, write a custom gate that probes it.
 
-6. **Singleton lock has the same caveats as [racefree-filelock](https://github.com/aiton08255/racefree-filelock).** Not safe on NFS or shared filesystems. PID reuse on long-uptime Windows systems can produce false-positives ("a different process now has that PID"); the `identity` parameter fixes this when `psutil` is installed.
+6. **Singleton lock has the same caveats as [racefree-filelock](https://github.com/dnarsh/racefree-filelock).** Not safe on NFS or shared filesystems. PID reuse on long-uptime Windows systems can produce false-positives ("a different process now has that PID"); the `identity` parameter fixes this when `psutil` is installed.
 
 7. **Subprocess targets don't get a stop signal yet.** If the supervisor is killed mid-cycle, the subprocess child is left running until it exits on its own. v0.2 will add `terminate_on_stop`.
 
@@ -245,7 +246,7 @@ Exposed for direct use if you want rotation outside the supervisor.
 ## Run the tests
 
 ```bash
-git clone https://github.com/aiton08255/evergreen-watchdog
+git clone https://github.com/dnarsh/evergreen-watchdog
 cd evergreen-watchdog
 pip install -e ".[dev,psutil]"
 python -m pytest tests/ -v
@@ -281,4 +282,4 @@ Keep the LOC count low. The point of this library is that it's small enough to r
 - New built-in gates that have proven themselves in production (not just "would be nice")
 - Cross-platform fixes for Linux/macOS edge cases (the original system runs on Windows; Linux is well-covered by tests but less by production hours)
 
-Open an [issue](https://github.com/aiton08255/evergreen-watchdog/issues) before a large PR.
+Open an [issue](https://github.com/dnarsh/evergreen-watchdog/issues) before a large PR.
